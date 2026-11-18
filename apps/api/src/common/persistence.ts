@@ -89,14 +89,39 @@ export class Persistence {
   /** Replace the local copy of one row with what the database holds (or drop it if it's gone). */
   async forceReload(name: string, id: string) {
     if (!isSyncable(this.store)) return;
-    const table = this.db.tables[name]; if (!table) return;
-    const data = await this.store.loadRow(name, id);
-    const seen = this.last.get(name) ?? this.last.set(name, new Map()).get(name)!;
-    if (data === null) { table.delete(id); seen.delete(id); return; }
-    table.restore([JSON.parse(data)]); seen.set(id, table.immutable ? "" : data);
+    const store = this.store;
+    // Never run beside a sync: a slow read here must not overwrite a newer row that sync just loaded.
+    while (this.syncing) await this.syncing.catch(() => undefined);
+    const run = (async () => {
+      const table = this.db.tables[name]; if (!table) return;
+      const data = await store.loadRow(name, id);
+      const seen = this.last.get(name) ?? this.last.set(name, new Map()).get(name)!;
+      if (data === null) { table.delete(id); seen.delete(id); return; }
+      table.restore([JSON.parse(data)]); seen.set(id, table.immutable ? "" : data);
+    })();
+    const guard = run.then(() => undefined, () => undefined).finally(() => { if (this.syncing === guard) this.syncing = null; });
+    this.syncing = guard;
+    await run;
   }
 
   private lastSync = 0;
+  /**
+   * Another instance changed a row we hold unsaved edits to. Never drop their change silently: the newer write wins
+   * (by updatedAt where the row has one), and a project's head revision only ever moves forward.
+   */
+  private async mergeDirty(store: SyncableStore, name: string, id: string) {
+    const table = this.db.tables[name]!; const local = table.get(id) as Record<string, unknown> | undefined; if (!local) return;
+    const data = await store.loadRow(name, id); if (data === null) return;
+    const foreign = JSON.parse(data) as Record<string, unknown>;
+    const seen = this.last.get(name) ?? this.last.set(name, new Map()).get(name)!;
+    const lt = typeof local["updatedAt"] === "number" ? local["updatedAt"] : null, ft = typeof foreign["updatedAt"] === "number" ? foreign["updatedAt"] : null;
+    if (lt === null || ft === null) return; // no way to order the two: ours is written next and wins
+    const merged = ft > lt ? { ...foreign } : { ...local };
+    if (name === "projects") merged["headRevision"] = Math.max(Number(local["headRevision"]), Number(foreign["headRevision"]));
+    table.restore([merged as never]);
+    if (ft > lt && JSON.stringify(merged) === data) seen.set(id, data); // identical to the database: nothing left to write
+  }
+
   /** Sync unless we did so very recently (cheap guard for hot paths). */
   async syncFresh(maxAgeMs = 250) { if (Date.now() - this.lastSync < maxAgeMs) return; await this.sync(); }
 
@@ -113,7 +138,8 @@ export class Persistence {
           const latest = new Map<string, ChangeEntry>();
           for (const c of list) if (c.origin !== this.instanceId) latest.set(`${c.table}\u0000${c.id}`, c);
           for (const c of latest.values()) {
-            const table = this.db.tables[c.table]; if (!table || this.isDirty(c.table, c.id)) continue;
+            const table = this.db.tables[c.table]; if (!table) continue;
+            if (this.isDirty(c.table, c.id)) { await this.mergeDirty(store, c.table, c.id); continue; }
             const seen = this.last.get(c.table) ?? this.last.set(c.table, new Map()).get(c.table)!;
             if (c.op === "del") { table.delete(c.id); seen.delete(c.id); continue; }
             const data = await store.loadRow(c.table, c.id);
