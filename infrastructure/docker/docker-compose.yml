@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16
+    environment: { POSTGRES_USER: webbrik, POSTGRES_PASSWORD: webbrik, POSTGRES_DB: webbrik }
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U webbrik"], interval: 5s, retries: 10 }
+  api:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.api }
+    environment:
+      DATABASE_URL: postgresql://webbrik:webbrik@postgres:5432/webbrik
+      PORT: "4000"
+      MULTI_INSTANCE: ${MULTI_INSTANCE:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:-}
+      PAYSTACK_PRO_AMOUNT: ${PAYSTACK_PRO_AMOUNT:-}
+      PAYSTACK_PLAN_PRO: ${PAYSTACK_PLAN_PRO:-}
+      PAYSTACK_CURRENCY: ${PAYSTACK_CURRENCY:-NGN}
+      PAYSTACK_PLAN_TEAM: ${PAYSTACK_PLAN_TEAM:-}
+      PAYSTACK_TEAM_AMOUNT: ${PAYSTACK_TEAM_AMOUNT:-}
+      BILLING_TAX_PERCENT: ${BILLING_TAX_PERCENT:-0}
+      BILLING_TAX_LABEL: ${BILLING_TAX_LABEL:-VAT}
+      INVOICE_SELLER_NAME: ${INVOICE_SELLER_NAME:-}
+      INVOICE_SELLER_ADDRESS: ${INVOICE_SELLER_ADDRESS:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      WORKER_TOKEN: ${WORKER_TOKEN:-}
+      SECRET_KEY: ${SECRET_KEY:-change-me}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:4000}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      VERCEL_TOKEN: ${VERCEL_TOKEN:-}
+      VERCEL_TEAM_ID: ${VERCEL_TEAM_ID:-}
+    ports: ["4000:4000"]
+    depends_on: { postgres: { condition: service_healthy } }
+  web:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.web, args: { API_URL: "http://api:4000" } }
+    ports: ["3000:3000"]
+    depends_on: [api]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment: { MINIO_ROOT_USER: webbrik, MINIO_ROOT_PASSWORD: webbrik-secret }
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+volumes: { pgdata: {}, miniodata: {} }

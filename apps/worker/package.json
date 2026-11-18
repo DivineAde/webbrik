@@ -1,0 +1,21 @@
+{
+  "name": "@webbrik/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@webbrik/deployment": "workspace:*",
+    "@webbrik/document-model": "workspace:*",
+    "@webbrik/exporter": "workspace:*",
+    "bullmq": "^5.20.0",
+    "@webbrik/renderer": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0"
+  }
+}

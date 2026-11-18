@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  DESIGNER
+  DEVELOPER
+  VIEWER
+}
+
+enum DeployStatus {
+  QUEUED
+  BUILDING
+  READY
+  ERROR
+  CANCELED
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  passwordHash  String?
+  name          String?
+  emailVerified DateTime?
+  mfaSecret     String?
+  createdAt     DateTime     @default(now())
+  sessions      Session[]
+  oauth         OAuthAccount[]
+  memberships   Membership[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model OAuthAccount {
+  id         String @id @default(cuid())
+  userId     String
+  provider   String
+  providerId String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerId])
+}
+
+model Workspace {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  invites     Invite[]
+  projects    Project[]
+  plan        Subscription?
+  usage       UsageRecord[]
+  auditLogs   AuditLog[]
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        Role
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([userId, workspaceId])
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  role        Role
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  slug        String
+  description String?
+  thumbnail   String?
+  archivedAt  DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  /// Head revision number; saves use optimistic concurrency against this.
+  headRevision Int      @default(0)
+  documents   DocumentRevision[]
+  versions    NamedVersion[]
+  assets      Asset[]
+  collections Collection[]
+  deployments Deployment[]
+  domains     Domain[]
+  comments    Comment[]
+  envVars     EnvVar[]
+  @@unique([workspaceId, slug])
+  @@index([workspaceId, updatedAt])
+}
+
+/// Canonical document snapshots (JSON validated by @webbrik/document-model on write).
+model DocumentRevision {
+  id        String   @id @default(cuid())
+  projectId String
+  revision  Int
+  document  Json
+  authorId  String?
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@unique([projectId, revision])
+}
+
+model NamedVersion {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  revision   Int
+  authorId   String?
+  createdAt  DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Asset {
+  id         String   @id @default(cuid())
+  projectId  String
+  folder     String   @default("/")
+  name       String
+  kind       String
+  mimeType   String
+  sizeBytes  Int
+  width      Int?
+  height     Int?
+  altText    String?
+  sha256     String
+  storageKey String
+  createdAt  DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId, sha256])
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  slug      String
+  schema    Json
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items     CollectionItem[]
+  @@unique([projectId, slug])
+}
+
+model CollectionItem {
+  id           String     @id @default(cuid())
+  collectionId String
+  slug         String
+  data         Json
+  status       String     @default("draft")
+  publishAt    DateTime?
+  updatedAt    DateTime   @updatedAt
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  @@unique([collectionId, slug])
+}
+
+model Deployment {
+  id           String       @id @default(cuid())
+  projectId    String
+  provider     String
+  providerId   String?
+  target       String
+  status       DeployStatus @default(QUEUED)
+  revision     Int
+  url          String?
+  logs         String[]
+  createdAt    DateTime     @default(now())
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId, createdAt])
+}
+
+model Domain {
+  id        String  @id @default(cuid())
+  projectId String
+  hostname  String  @unique
+  verified  Boolean @default(false)
+  primary   Boolean @default(false)
+  redirectTo String?
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model EnvVar {
+  id          String  @id @default(cuid())
+  projectId   String
+  key         String
+  valueCipher String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@unique([projectId, key])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  projectId  String
+  elementId  String?
+  authorId   String
+  body       String
+  resolvedAt DateTime?
+  createdAt  DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id          String    @id @default(cuid())
+  workspaceId String    @unique
+  plan        String    @default("free")
+  entitlements Json     @default("{}")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model UsageRecord {
+  id          String    @id @default(cuid())
+  workspaceId String
+  metric      String
+  quantity    Int
+  period      String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, metric, period])
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  workspaceId String
+  actorId     String?
+  action      String
+  target      String?
+  meta        Json?
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@index([workspaceId, createdAt])
+}
