@@ -112,7 +112,7 @@ export const DocumentSchema = z.object({
   animations: z.record(z.string(), AnimationSchema).default({}),
   breakpoints: z.array(BreakpointSchema),
   tokens: z.record(z.string(), z.string()).default({}),
-  customCode: z.object({ headHtml: z.string().default(""), customCss: z.string().default("") }).default({}),
+  customCode: z.object({ headHtml: z.string().default(""), customCss: z.string().default("") }).prefault({}),
 });
 export type Document = z.infer<typeof DocumentSchema>;
 
