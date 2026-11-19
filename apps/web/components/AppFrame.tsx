@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { shellCache } from "@/lib/shell-cache";
+import { resetShellCache, shellCache } from "@/lib/shell-cache";
 import { AppShell, type ShellNav, type ShellWorkspace } from "@/components/AppShell";
 
 /** The signed-in layout for every page outside the dashboard and editor: sidebar, page title, breadcrumb, content. */
@@ -28,7 +28,7 @@ export function AppFrame({ nav, title, description, crumbs = [], actions, width 
     <AppShell
       user={user} workspaces={ws} activeId={active} nav={nav}
       onSwitch={(id) => { shellCache.active = id; setActive(id); try { localStorage.setItem("webbrik.workspace", id); } catch { /* storage unavailable */ } router.push(`/workspaces/${id}`); }}
-      onSignOut={async () => { await api("/auth/logout", { method: "POST" }); router.push("/login"); }}
+      onSignOut={async () => { await api("/auth/logout", { method: "POST" }); resetShellCache(); router.push("/login"); }}
     >
       <div className={`mx-auto w-full ${width} px-5 py-8 sm:px-8 lg:px-10`}>
         {crumbs.length > 0 && (

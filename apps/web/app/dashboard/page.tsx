@@ -1,7 +1,7 @@
 "use client";
 import { Archive, ArchiveRestore, ArrowUpDown, Copy, ExternalLink, LayoutGrid, List, MoreHorizontal, Pencil, Plus, Search, Settings2, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { shellCache } from "@/lib/shell-cache";
+import { resetShellCache, shellCache } from "@/lib/shell-cache";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell, type ShellNav, type ShellWorkspace } from "@/components/AppShell";
@@ -86,6 +86,7 @@ export default function Dashboard() {
 
   const load = useCallback(async (wid: string, which: ShellNav, order: Sort) => {
     if (!wid) return;
+    setErr(null);
     try {
       const sortParam = order === "updated" ? "updated" : order, dir = order === "name" ? "asc" : "desc";
       setProjects((await api<{ projects: Project[] }>(`/workspaces/${wid}/projects?sort=${sortParam}&order=${dir}${which === "archived" ? "&archived=true" : ""}`)).projects);
@@ -123,7 +124,7 @@ export default function Dashboard() {
       user={user} workspaces={ws} activeId={active} nav={nav}
       onSwitch={(id) => { setActive(id); try { localStorage.setItem("webbrik.workspace", id); } catch { /* storage unavailable */ } }}
       onNav={setNav}
-      onSignOut={async () => { await api("/auth/logout", { method: "POST" }); router.push("/login"); }}
+      onSignOut={async () => { await api("/auth/logout", { method: "POST" }); resetShellCache(); router.push("/login"); }}
     >
       <div className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10">
         <header className="flex flex-wrap items-center gap-3">

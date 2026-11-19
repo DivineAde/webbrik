@@ -2,16 +2,18 @@
 import { Eye, EyeOff, Github } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthShell, FormError } from "@/components/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { useSignedInRedirect } from "@/lib/use-signed-in-redirect";
 import { enabledProviders, startOAuth } from "@/lib/oauth";
+import { resetShellCache } from "@/lib/shell-cache";
 
 export default function Login() {
   const checking = useSignedInRedirect();
+  useEffect(() => { if (!checking) resetShellCache(); }, [checking]);
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [f, setF] = useState({ name: "", email: "", password: "", mfaCode: "" });
