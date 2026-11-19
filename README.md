@@ -27,4 +27,4 @@ Read `docs/engineering/status.md` before assuming a blueprint item exists.
 
 ## Verification
 
-`pnpm typecheck`, `pnpm test`, `pnpm --filter @webbrik/api bench` (benchmarks), and `pnpm --filter @webbrik/web e2e` (browser suites, including the axe accessibility audit). Details and limits: `docs/engineering/status.md` and `docs/engineering/performance-and-accessibility.md`.
+`pnpm typecheck`, `pnpm test`, `pnpm --filter @webbrik/api bench` (benchmarks), and `pnpm --filter @webbrik/web e2e` (browser suites, including the axe accessibility audit). Details and limits here: `docs/engineering/status.md` and `docs/engineering/performance-and-accessibility.md`.
