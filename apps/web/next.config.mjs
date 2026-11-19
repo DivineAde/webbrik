@@ -13,7 +13,17 @@ export default {
   devIndicators: false,
   // Same-origin API: cookies stay first-party and no CORS is needed in production.
   async rewrites() {
-    const api = process.env.API_URL ?? "http://localhost:4000";
-    return [{ source: "/api/:path*", destination: `${api}/v1/:path*` }];
-  },
+  const api = process.env.API_URL;
+
+  if (!api && process.env.NODE_ENV === "production") {
+    throw new Error("API_URL is missing in production");
+  }
+
+  return [
+    {
+      source: "/api/:path*",
+      destination: `${(api || "http://localhost:4000").replace(/\/+$/, "")}/v1/:path*`,
+    },
+  ];
+},
 };
