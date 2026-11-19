@@ -50,3 +50,6 @@ Verified at last run: `pnpm typecheck` (20/20) · `pnpm test` (all packages gree
 - Round 5: removed sidebar New project; loading.tsx skeletons in the shell frame; Help inside the shell when signed in; sidebar scrolls on its own; Link on dashboard cards.
 
 - Uploads: S3-compatible object storage (Backblaze B2) via S3_* env vars; falls back to memory with a warning. Production refuses to start without it unless ALLOW_EPHEMERAL=1.
+
+## Landing page redesign
+- Home page rebuilt: interactive hero editor (reorder layers, restyle, guided tour), generated fictional site snapshots, device previews, export code tabs, product scenes, FAQ. Styles in `app/lx.css`; components in `components/landing/`.

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Boxes, Check, FileText, Globe, History, KeyRound, Lock, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Check, FileText, GitBranch, Globe, Lock, MessageSquare, Sparkles } from "lucide-react";
 import "./landing.css";
+import "./lx.css";
 import { BrickPattern } from "@/components/BrickPattern";
 import { LogoMark } from "@/components/Logo";
 import { Nav } from "@/components/landing/Nav";
-import { EditorFrame, InspectorFrame } from "@/components/landing/EditorFrame";
+import { InspectorFrame } from "@/components/landing/EditorFrame";
+import { HeroBuilder } from "@/components/landing/HeroBuilder";
+import { CodeTabs } from "@/components/landing/CodeTabs";
+import { SITES, Snap } from "@/components/landing/Snap";
 
 export const metadata: Metadata = {
   title: { absolute: "Webbrik — Visual website builder with full CSS control" },
@@ -14,29 +18,6 @@ export const metadata: Metadata = {
 
 /** Deterministic brick tones so the server and client agree. */
 const tone = (i: number) => ((i * 37) % 10) / 10;
-const WALL_ROWS = 7, WALL_COLS = 5, SELECTED = 3 * WALL_COLS + 2;
-
-function Wall() {
-  return (
-    <div className="lp-wall" aria-hidden="true">
-      {Array.from({ length: WALL_ROWS }, (_, r) => (
-        <div className="lp-wall-row" key={r}>
-          {Array.from({ length: WALL_COLS }, (_, c) => {
-            const i = r * WALL_COLS + c;
-            const sel = i === SELECTED;
-            return (
-              <div key={c} className={`lp-brick ${sel ? "lp-brick-sel" : ""}`} style={{ "--i": i, "--t": tone(i) } as React.CSSProperties}>
-                {sel && <><i /><i /><i /><i /><b>div.brick</b><span className="lp-chip" role="presentation"><em>width</em>168px<em>radius</em>4px<em>background</em>#e4e4e7</span></>}
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const TREE: [number, string, boolean?][] = [[0, "body"], [1, "Section"], [2, "Container"], [3, "Heading 1", true], [3, "Paragraph"], [3, "Button"], [1, "Section"], [2, "Columns"]];
 
 const PLANS = [
   { name: "Free", blurb: "For your first sites.", rows: [["Projects", "3"], ["Members", "1"], ["Storage", "500 MB"], ["Publishes a month", "20"], ["AI credits a month", "20"], ["Custom domains", "No"]] },
@@ -44,36 +25,59 @@ const PLANS = [
   { name: "Team", blurb: "For several people on one account.", rows: [["Projects", "500"], ["Members", "50"], ["Storage", "200 GB"], ["Publishes a month", "10,000"], ["AI credits a month", "10,000"], ["Custom domains", "Yes"]] },
 ];
 
+const FAQ = [
+  ["Do I own what I build?", "Yes. Export a static site as HTML and CSS, or a Next.js or Vite React project, and host it anywhere. There is nothing to unlock."],
+  ["What does the free plan include?", "The full editor and source export, with up to 3 projects, 500 MB of storage and 20 publishes a month. Limits are what change on paid plans."],
+  ["Can I use my own domain?", "Yes, on Pro and Team. Add a domain on the Publish tab, create the DNS record it shows, then verify."],
+  ["How does the assistant work?", "You describe a change in words. It proposes edits to the page, and you review them before anything is applied."],
+  ["Can my team edit together?", "Yes. You see who is in the page live, share a review link for comments, and restore any saved version."],
+] as const;
+
 export default function Home() {
   return (
     <div className="lp">
       <a href="#main" className="lp-skip">Skip to content</a>
       <Nav />
       <main id="main">
-        {/* 1. Hero: alone on the first screen */}
-        <section className="lp-hero" aria-labelledby="hero-h">
-          <div className="lp-wrap" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-            <div className="lp-hero-top">
-              <div className="lp-hero-copy" data-enter>
-                <h1 id="hero-h" className="lp-h1">The visual website builder with full CSS control.</h1>
-                <p className="lp-lead">Design on a canvas, edit every CSS property, then publish or export the source. Free for up to 3 projects.</p>
+        {/* 1. Hero: the product, working */}
+        <section className="lx-hero" aria-labelledby="hero-h">
+          <div className="lx-bond" aria-hidden="true" />
+          <div className="lp-wrap">
+            <div className="lx-hero-copy" data-enter>
+              <h1 id="hero-h" className="lx-h1">Design the site.<br />Keep the code.</h1>
+              <div className="lx-hero-side">
+                <p className="lp-lead">Webbrik is a visual builder with full CSS control. Lay pages out on a canvas, then publish them or export clean HTML, CSS and React.</p>
                 <div className="lp-actions">
                   <Link href="/login" className="lp-btn lp-btn-primary">Start building <ArrowRight aria-hidden /></Link>
                   <Link href="/editor" className="lp-btn lp-btn-line">Open the editor</Link>
                 </div>
-                <ul className="lp-facts" aria-label="At a glance">
-                  <li><Check aria-hidden />Free for up to 3 projects</li>
-                  <li><Check aria-hidden />Clean HTML, CSS or React export</li>
-                  <li><Check aria-hidden />Edit together in real time</li>
-                </ul>
+                <p className="lx-note">Free for up to 3 projects. No card needed.</p>
               </div>
-              <Wall />
             </div>
-            <EditorFrame demo />
+            <HeroBuilder />
           </div>
         </section>
 
-        {/* 2. The editor */}
+        {/* 2. Layouts */}
+        <section className="lx-gallery" aria-labelledby="gal-h">
+          <div className="lp-wrap lx-gal-head">
+            <h2 id="gal-h" className="lp-h2">Start from a layout, not a blank page.</h2>
+            <p className="lp-body">Illustrations of the kinds of sites you can build: shops, studios, apps and publishers.</p>
+          </div>
+          <div className="lx-marquee">
+            <ul className="lx-track">
+              {[...SITES, ...SITES].map((s, i) => (
+                <li key={i} aria-hidden={i >= SITES.length || undefined}>
+                  <div className="lx-chrome"><span className="lx-dots"><i /><i /><i /></span><span className="lx-url">{s.brand.toLowerCase().replace(/[^a-z]/g, "")}.example</span></div>
+                  <Snap s={s} />
+                  <p><b>{s.brand}</b>{s.kind}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* 3. The design panel */}
         <section id="product" className="lp-sec-pad lp-rule" aria-labelledby="edit-h">
           <div className="lp-wrap lp-split lp-split-flip">
             <div style={{ position: "relative" }}>
@@ -90,88 +94,96 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. Source of truth */}
-        <section id="source" className="lp-sec-pad lp-rule" aria-labelledby="doc-h">
-          <div className="lp-wrap" style={{ display: "grid", gap: 56 }}>
+        {/* 4. Responsive */}
+        <section className="lp-sec-pad lp-rule" aria-labelledby="resp-h">
+          <div className="lp-wrap" style={{ display: "grid", gap: 48 }}>
             <div className="lp-copy" style={{ maxWidth: 760 }}>
-              <h2 id="doc-h" className="lp-h2">A page is a document, not a pile of pixels.</h2>
+              <h2 id="resp-h" className="lp-h2">One page, every screen width.</h2>
+              <p className="lp-lead">Switch breakpoints in the toolbar and restyle just that size. Larger screens inherit down, so you only write what changes.</p>
+            </div>
+            <div className="lx-devices" aria-label="The same page at desktop, tablet and phone widths">
+              <figure className="d-desk"><div className="lx-chrome"><span className="lx-dots"><i /><i /><i /></span><span className="lx-url">loafandco.example</span></div><Snap s={SITES[0]!} /><figcaption>Desktop <em>1280</em></figcaption></figure>
+              <figure className="d-tab"><div className="lx-bezel"><Snap s={SITES[0]!} stack /></div><figcaption>Tablet <em>768</em></figcaption></figure>
+              <figure className="d-phone"><div className="lx-bezel"><Snap s={SITES[0]!} stack /></div><figcaption>Phone <em>390</em></figcaption></figure>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Source of truth: export */}
+        <section id="source" className="lx-dark lp-sec-pad" aria-labelledby="doc-h">
+          <div className="lp-wrap lx-export">
+            <div className="lp-copy">
+              <h2 id="doc-h" className="lp-h2">A page is a document. Export it as code.</h2>
               <p className="lp-lead">Every element is a typed node with its own styles. The editor, the preview and the export all read the same document, so what you see is what ships.</p>
+              <ul className="lp-targets" role="list">
+                {[["Static site", "HTML + CSS"], ["Next.js project", "React + TSX"], ["Vite project", "React + TSX"]].map(([a, b]) => <li className="lp-target" key={a}>{a}<span>{b}</span></li>)}
+              </ul>
             </div>
-            <div className="lp-doc">
-              <div className="lp-tree" aria-label="Layers">
-                <div className="lp-tree-h">Layers</div>
-                {TREE.map(([d, n, on], i) => <div key={i} className={`lp-node ${on ? "on" : ""}`} style={{ "--d": d } as React.CSSProperties}><Boxes aria-hidden />{n}</div>)}
-              </div>
-              <div className="lp-code" role="img" aria-label="Exported HTML and CSS for a heading inside a section">
-                <div className="lp-code-tabs"><span className="on">index.html</span><span>styles.css</span></div>
-{`<`}<span className="k">section</span> <span className="p">class</span>=<span className="s">&quot;section&quot;</span>{`>`}{"\n"}
-{`  <`}<span className="k">div</span> <span className="p">class</span>=<span className="s">&quot;container&quot;</span>{`>`}{"\n"}
-{`    <`}<span className="k">h1</span> <span className="p">class</span>=<span className="s">&quot;heading-1&quot;</span>{`>`}Design that ships.{`</`}<span className="k">h1</span>{`>`}{"\n"}
-{`    <`}<span className="k">p</span>{`>`}Every element is a typed node.{`</`}<span className="k">p</span>{`>`}{"\n"}
-{`  </`}<span className="k">div</span>{`>`}{"\n"}
-{`</`}<span className="k">section</span>{`>`}{"\n\n"}
-<span className="c">/* styles.css */</span>{"\n"}
-<span className="k">.heading-1</span> {`{`}{"\n"}
-{`  `}<span className="p">font-size</span>: <span className="s">22px</span>;{"\n"}
-{`  `}<span className="p">letter-spacing</span>: <span className="s">-0.03em</span>;{"\n"}
-{`}`}
-              </div>
-            </div>
+            <CodeTabs />
           </div>
         </section>
 
-        {/* 4. Type moment */}
-        <section className="lp-dark lp-sec-pad" aria-labelledby="lock-h">
-          <div className="lp-wrap">
-            <h2 id="lock-h" className="lp-lock"><span>No</span><span className="o">lock-in.</span></h2>
-            <div className="lp-lock-grid">
-              <p className="lp-lead" style={{ color: "oklch(0.78 0 0)" }}>Export a static site as plain HTML and CSS, or a Next.js or Vite React project. The files are yours to host and edit anywhere.</p>
-              <div className="lp-targets" role="list">
-                {[["Static site", "HTML + CSS"], ["Next.js project", "React + TSX"], ["Vite project", "React + TSX"]].map(([a, b]) => <div role="listitem" className="lp-target" key={a}>{a}<span>{b}</span></div>)}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Everything around the canvas */}
+        {/* 6. Around the canvas */}
         <section id="more" className="lp-sec-pad" aria-labelledby="more-h">
           <div className="lp-wrap" style={{ display: "grid", gap: 48 }}>
             <div className="lp-copy" style={{ maxWidth: 760 }}>
               <h2 id="more-h" className="lp-h2">Publishing, content, forms and teamwork are built in.</h2>
             </div>
-            <div className="lp-bento">
-              <article className="lp-cell c-5">
-                <div><Globe size={20} aria-hidden /><h3 className="lp-h3" style={{ marginTop: 14 }}>Publish to a live address</h3><p>One click publishes the page. Add your own domain on Pro and Team.</p></div>
-                <div className="lp-urlbar" aria-hidden="true"><Lock aria-hidden /><b>studio-site.example</b><em>Live</em></div>
-              </article>
-              <article className="lp-cell c-7">
-                <div><FileText size={20} aria-hidden /><h3 className="lp-h3" style={{ marginTop: 14 }}>Content collections</h3><p>Define fields once, add items, then bind them to headings, lists and dynamic pages.</p></div>
-                <div className="lp-mini" aria-hidden="true">
-                  <div className="r h"><span>title</span><span>views</span><span>status</span></div>
-                  <div className="r"><span>Launch notes</span><span>1,204</span><span>Published</span></div>
-                  <div className="r"><span>Pricing update</span><span>386</span><span>Draft</span></div>
+            <div className="lx-bento">
+              <article className="lx-cell w7">
+                <div className="lx-scene lx-collab" aria-hidden="true">
+                  <Snap s={SITES[0]!} />
+                  <span className="lx-cur c1"><svg width="16" height="16" viewBox="0 0 18 18"><path d="M2 1.5 15.5 8l-5.6 1.7L7.3 15 2 1.5Z" fill="currentColor" stroke="#fff" strokeWidth="1.2" strokeLinejoin="round" /></svg><i>Ada</i></span>
+                  <span className="lx-cur c2"><svg width="16" height="16" viewBox="0 0 18 18"><path d="M2 1.5 15.5 8l-5.6 1.7L7.3 15 2 1.5Z" fill="currentColor" stroke="#fff" strokeWidth="1.2" strokeLinejoin="round" /></svg><i>Tunde</i></span>
+                  <span className="lx-pin"><MessageSquare aria-hidden />Can the button be bigger?</span>
                 </div>
+                <div className="lx-cap"><h3 className="lp-h3">Work together, in the same page</h3><p>See who is editing live, leave comments through a review link, and restore any saved version.</p></div>
               </article>
-              <article className="lp-cell c-4">
-                <div><KeyRound size={20} aria-hidden /><h3 className="lp-h3" style={{ marginTop: 14 }}>Forms that validate</h3><p>Build a form on the canvas; errors appear under the field that caused them.</p></div>
-                <div className="lp-field" aria-hidden="true"><label>Email</label><div className="i bad">name@</div><small>Enter a full email address.</small></div>
-              </article>
-              <article className="lp-cell c-4">
-                <div><Sparkles size={20} aria-hidden /><h3 className="lp-h3" style={{ marginTop: 14 }}>An assistant for edits</h3><p>Describe a change in words and review it before it touches your page.</p></div>
-                <div className="lp-ai" aria-hidden="true"><div className="q">Add a three column feature row</div><div className="a"><span>Columns</span><span>3 headings</span><span>3 texts</span></div></div>
-              </article>
-              <article className="lp-cell c-4">
-                <div><Users size={20} aria-hidden /><h3 className="lp-h3" style={{ marginTop: 14 }}>Work together, roll back</h3><p>See who is editing live, share a review link, restore any saved version.</p></div>
-                <div style={{ display: "grid", gap: 12 }} aria-hidden="true">
-                  <div className="lp-people"><i style={{ background: "oklch(0.2 0 0)" }}>Y</i><i style={{ background: "oklch(0.55 0.12 200)" }}>C</i><i style={{ background: "oklch(0.6 0.12 150)" }}>R</i></div>
-                  <div className="lp-vers"><div>Version 12<span><History size={12} style={{ display: "inline", verticalAlign: "-1px" }} /> Restore</span></div></div>
+              <article className="lx-cell w5">
+                <div className="lx-scene lx-deploy" aria-hidden="true">
+                  <div className="lp-urlbar"><Lock aria-hidden /><b>loafandco.example</b><em>Live</em></div>
+                  <ol>
+                    <li><i className="ok" />Production<span>Revision 14</span><em>2 min ago</em></li>
+                    <li><i className="ok" />Preview<span>Revision 13</span><em>1 h ago</em></li>
+                    <li><i className="ok" />Production<span>Revision 11</span><em>Yesterday</em></li>
+                  </ol>
                 </div>
+                <div className="lx-cap"><h3 className="lp-h3"><Globe size={18} aria-hidden />Publish to a live address</h3><p>One click publishes the page. Add your own domain on Pro and Team, and roll back any time.</p></div>
+              </article>
+              <article className="lx-cell w5">
+                <div className="lx-scene lx-cms" aria-hidden="true">
+                  <div className="lp-mini">
+                    <div className="r h"><span>title</span><span>views</span><span>status</span></div>
+                    <div className="r"><span>Spring menu</span><span>1,204</span><span>Published</span></div>
+                    <div className="r"><span>Hiring a baker</span><span>386</span><span>Draft</span></div>
+                    <div className="r"><span>Market stall</span><span>92</span><span>Published</span></div>
+                  </div>
+                  <span className="lx-bind"><FileText aria-hidden />Heading bound to <b>title</b></span>
+                </div>
+                <div className="lx-cap"><h3 className="lp-h3">Content collections</h3><p>Define fields once, add items, then bind them to headings, lists and dynamic pages.</p></div>
+              </article>
+              <article className="lx-cell w7">
+                <div className="lx-scene lx-ai" aria-hidden="true">
+                  <div className="q"><Sparkles aria-hidden />Add a three column feature row under the hero</div>
+                  <div className="a"><p>Proposed changes</p><span><GitBranch aria-hidden />Add Columns <em>3 items</em></span><span><GitBranch aria-hidden />Add Heading ×3 <em>sentence case</em></span><div className="btns"><u>Apply</u><s>Dismiss</s></div></div>
+                </div>
+                <div className="lx-cap"><h3 className="lp-h3">An assistant that asks first</h3><p>Describe a change in words and review the proposed edits before anything touches your page.</p></div>
               </article>
             </div>
           </div>
         </section>
 
-        {/* 6. Plans */}
+        {/* 7. Questions */}
+        <section className="lp-sec-pad lp-rule" aria-labelledby="faq-h">
+          <div className="lp-wrap lx-faq">
+            <h2 id="faq-h" className="lp-h2">Questions, answered.</h2>
+            <div>
+              {FAQ.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
+            </div>
+          </div>
+        </section>
+
+        {/* 8. Plans */}
         <section id="plans" className="lp-sec-pad lp-rule" aria-labelledby="plans-h">
           <div className="lp-wrap" style={{ display: "grid", gap: 48 }}>
             <div className="lp-copy" style={{ maxWidth: 760 }}>

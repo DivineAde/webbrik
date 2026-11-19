@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/Brand";
 import { LogoMark } from "@/components/Logo";
 import { api } from "@/lib/api";
-import { initials } from "@/lib/time";
 
 const PRODUCT = [
   { icon: MousePointerClick, title: "Visual editor", text: "Drag components onto the page and move them with a right-click.", href: "#main" },
@@ -82,10 +81,7 @@ export function Nav() {
           </nav>
           <div className="lp-nav-right">
             {user ? (
-              <>
-                <Link href="/settings" className="lp-avatar" aria-label={`Signed in as ${user.name}. Open account settings`}>{initials(user.name)}</Link>
-                <Link href="/dashboard" className="lp-btn lp-btn-primary">Open dashboard <ArrowRight aria-hidden /></Link>
-              </>
+              <Link href="/dashboard" className="lp-btn lp-btn-primary">Dashboard <ArrowRight aria-hidden /></Link>
             ) : (
               <>
                 <Link href="/login" className="lp-signin lp-link">Sign in</Link>
@@ -110,7 +106,7 @@ export function Nav() {
             <Link href="/help">Help</Link>
           </nav>
           <div className="lp-mobile-cta">
-            {user ? <Link href="/dashboard" className="lp-btn lp-btn-primary">Open dashboard <ArrowRight aria-hidden /></Link> : (
+            {user ? <Link href="/dashboard" className="lp-btn lp-btn-primary">Dashboard <ArrowRight aria-hidden /></Link> : (
               <>
                 <Link href="/login" className="lp-btn lp-btn-primary">Start building <ArrowRight aria-hidden /></Link>
                 <Link href="/login" className="lp-btn lp-btn-line">Sign in</Link>
