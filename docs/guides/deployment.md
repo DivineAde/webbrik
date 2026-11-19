@@ -1,5 +1,7 @@
 # Deploying Webbrik
 
+Step by step for Vercel (web) + Render (API) + Neon (database) + Backblaze (files): [deploy-render-vercel.md](deploy-render-vercel.md).
+
 Nothing here has been run on a real host by me — treat it as a checklist to verify on a staging environment first.
 
 ## Shape
@@ -34,7 +36,7 @@ The compose file starts Postgres, the API, the web app, Redis and MinIO. Before 
 
 ## Option B — managed platforms
 - **Web:** any Node host or Vercel (`apps/web`, build `pnpm --filter @webbrik/web build`, start `next start`). Set `API_URL` to the API's internal/public URL before building.
-- **API:** any container/Node host; start `node dist/main.js` after `pnpm --filter @webbrik/api build`. Use managed Postgres.
+- **API:** any container/Node host; start `pnpm --filter @webbrik/api start` (the workspace packages ship as TypeScript, so the API runs through tsx rather than `node dist`). Use managed Postgres.
 - **Several API instances:** set `MULTI_INSTANCE=1` on all of them. Known limits: WebSocket hints, presence and rate limits are per instance (see `docs/engineering/known-gaps.md`).
 
 ## Paystack

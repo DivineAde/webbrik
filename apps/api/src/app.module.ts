@@ -85,6 +85,9 @@ export async function createApp(o: AppOverrides = {}) {
   const app = await NestFactory.create(AppModule.register({ ...o, db }, persistence), { bodyParser: false, logger: loggerFromEnv() });
   const http = app.getHttpAdapter().getInstance() as Express;
   http.disable("x-powered-by");
+  // Behind a proxy (Render, Vercel rewrites) every request would otherwise appear to come from the proxy, so rate limits would be shared by all visitors. TRUST_PROXY is the number of proxy hops in front of the API.
+  const hops = process.env.TRUST_PROXY;
+  if (hops) http.set("trust proxy", /^\d+$/.test(hops) ? Number(hops) : hops);
   if (process.env.NODE_ENV !== "test" && process.env.LOG_REQUESTS !== "0") app.use(requestLogger());
   app.use(json({ limit: "30mb", verify: (req: { url?: string; rawBody?: Buffer }, _res: unknown, buf: Buffer) => { if (req.url?.includes("/billing/paystack/webhook")) req.rawBody = buf; } }));
   app.use((_req: unknown, res: { setHeader(k: string, v: string): void }, next: () => void) => {

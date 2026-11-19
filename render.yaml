@@ -1,0 +1,47 @@
+# Render Blueprint for the API. Secrets are marked sync:false: Render asks for them in the dashboard, so nothing secret lives in git.
+services:
+  - type: web
+    name: webbrik-api
+    runtime: node
+    plan: starter            # the free plan sleeps after 15 minutes idle; use starter or higher for a real site
+    region: frankfurt        # pick the region closest to your Neon database
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false
+    startCommand: pnpm --filter @webbrik/api start
+    healthCheckPath: /v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "2"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: SMTP_URL
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: VERCEL_TOKEN
+        sync: false
+      - key: VERCEL_TEAM_ID
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
