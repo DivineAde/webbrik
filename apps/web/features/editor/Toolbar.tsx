@@ -4,7 +4,8 @@ import { Columns3, Minus, Monitor, Play, Plus, Redo2, Ruler, Search, Smartphone,
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/cn";
-import { downloadExport } from "./export";
+import { EXPORT_TARGETS, downloadExport } from "./export";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EditorMenu, MOD } from "./EditorMenu";
 import { useEditor } from "./store";
 
@@ -71,7 +72,14 @@ export function Toolbar() {
         <Button variant="secondary" aria-pressed={s.preview} onClick={() => s.setPreview(!s.preview)} className="px-3"><Play className="size-4" />{s.preview ? "Edit" : "Preview"}</Button>
         {s.remote
           ? <Button className="ml-1.5" onClick={() => router.push(`/projects/${s.remote!.projectId}?tab=Publish`)}>Publish</Button>
-          : <Button className="ml-1.5" onClick={() => downloadExport(s.doc)}>Export</Button>}
+          : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild><Button className="ml-1.5">Export</Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                {EXPORT_TARGETS.map((t) => <DropdownMenuItem key={t.id} onSelect={() => void downloadExport(s.doc, t.id).catch((e: Error) => alert(e.message))}>{t.label}<DropdownMenuShortcut>{t.note}</DropdownMenuShortcut></DropdownMenuItem>)}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
       </div>
     </header>
   );

@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { Check, Copy, ExternalLink, Globe, KeyRound, Rocket, RotateCcw } from "lucide-react";
+import { Check, Code2, Copy, ExternalLink, Globe, KeyRound, Rocket, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { shellCache } from "@/lib/shell-cache";
 import { ask } from "@/components/ui/confirm";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/Skeleton";
 import { cn } from "@/lib/cn";
 import { api } from "@/lib/api";
+import { EXPORT_TARGETS, downloadProjectExport, type ExportTarget } from "@/features/editor/export";
 import { useAction, useQuery } from "./hooks";
 
 interface Deployment { id: string; target: string; status: string; revision: number; url?: string; createdAt: number }
@@ -64,6 +65,8 @@ export function PublishTab({ id }: { id: string }) {
   const run = runIn("site"); const runDomains = runIn("domains"), runEnv = runIn("env");
   const Err = ({ z }: { z: typeof zone }) => (zone === z && error ? <p role="alert" className="mt-3 text-sm text-destructive">{error}{/plan/i.test(error) && shellCache.active && <> <Link href={`/workspaces/${shellCache.active}?tab=plan`} className="font-medium underline underline-offset-2">See plans</Link></>}</p> : null);
   const [notes, setNotes] = useState<string[]>([]);
+  const [exporting, setExporting] = useState<ExportTarget | null>(null); const [exportError, setExportError] = useState<string | null>(null);
+  const exportAs = async (t: ExportTarget) => { setExporting(t); setExportError(null); try { await downloadProjectExport(id, t); } catch (e) { setExportError((e as Error).message); } finally { setExporting(null); } };
   const [host, setHost] = useState(""); const [k, setK] = useState(""); const [v, setV] = useState("");
   const [dns, setDns] = useState<Dns[] | null>(null);
   const [working, setWorking] = useState<"preview" | "production" | null>(null);
@@ -123,6 +126,18 @@ export function PublishTab({ id }: { id: string }) {
             ))}
           </ol>
         )}
+      </Panel>
+
+      <Panel title="Export code" icon={<Code2 />} description="Take the site with you. The code has no runtime that depends on Webbrik.">
+        <div className="grid gap-2 sm:grid-cols-3">
+          {EXPORT_TARGETS.map((t) => (
+            <Button key={t.id} variant="secondary" className="h-auto flex-col items-start gap-0.5 px-4 py-3 text-left" disabled={exporting !== null} onClick={() => void exportAs(t.id)}>
+              <span className="font-medium">{exporting === t.id ? "Preparing…" : t.label}</span>
+              <span className="text-xs font-normal text-muted-foreground">{t.note}</span>
+            </Button>
+          ))}
+        </div>
+        {exportError && <p role="alert" className="mt-3 text-sm text-destructive">{exportError}</p>}
       </Panel>
 
       <Panel title="Domains" icon={<Globe />} description="Serve the site from your own address.">

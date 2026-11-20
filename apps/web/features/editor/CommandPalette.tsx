@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CATALOG } from "./catalog";
-import { downloadExport } from "./export";
+import { EXPORT_TARGETS, downloadExport } from "./export";
 import { useEditor } from "./store";
 
 interface Cmd { id: string; label: string; run: () => void }
@@ -20,7 +20,7 @@ export function CommandPalette() {
     ...s.doc.pages.map((p) => ({ id: "page-" + p.id, label: `Go to page: ${p.name}`, run: () => s.setPage(p.id) })),
     { id: "preview", label: s.preview ? "Exit preview" : "Toggle preview", run: () => s.setPreview(!s.preview) },
     { id: "theme", label: "Toggle dark theme", run: () => document.documentElement.classList.toggle("dark") },
-    { id: "export", label: "Export static site", run: () => downloadExport(s.doc) },
+    ...EXPORT_TARGETS.map((t) => ({ id: `export-${t.id}`, label: `Export ${t.label}`, run: () => void downloadExport(s.doc, t.id, s.remote?.projectId).catch((e: Error) => alert(e.message)) })),
     { id: "undo", label: "Undo", run: s.undo },
     { id: "redo", label: "Redo", run: s.redo },
   ], [s.doc, s.preview]); // eslint-disable-line react-hooks/exhaustive-deps

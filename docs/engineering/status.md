@@ -53,3 +53,5 @@ Verified at last run: `pnpm typecheck` (20/20) · `pnpm test` (all packages gree
 
 ## Landing page redesign
 - Home page rebuilt: interactive hero editor (reorder layers, restyle, guided tour), generated fictional site snapshots, device previews, export code tabs, product scenes, FAQ. Styles in `app/lx.css`; components in `components/landing/`.
+
+- Export: static, Next.js and Vite zips from the editor menu, the command palette, the local editor's Export button and the project's Publish tab (`e2e/export.cjs`). Saved projects export through the API so published content is included.

@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Command, Copy, Download, ExternalLink, FolderOpen, Keyboard, LifeBuoy, Redo2, Settings2, Trash2, Undo2 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { downloadExport } from "./export";
+import { EXPORT_TARGETS, downloadExport } from "./export";
 import { useEditor } from "./store";
 
 export const MOD = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
@@ -21,7 +21,14 @@ export function EditorMenu() {
       <DropdownMenuContent align="start" className="w-64">
         <DropdownMenuItem onSelect={() => router.push(s.remote ? "/dashboard" : "/")}><FolderOpen />All projects</DropdownMenuItem>
         {s.remote && <DropdownMenuItem onSelect={() => router.push(`/projects/${s.remote!.projectId}`)}><Settings2 />Project settings</DropdownMenuItem>}
-        <DropdownMenuItem onSelect={() => downloadExport(s.doc)}><Download />Export site</DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger><Download />Export code</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="w-60">
+            {EXPORT_TARGETS.map((t) => (
+              <DropdownMenuItem key={t.id} onSelect={() => void downloadExport(s.doc, t.id, s.remote?.projectId).catch((e: Error) => alert(e.message))}>{t.label}<DropdownMenuShortcut>{t.note}</DropdownMenuShortcut></DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Edit</DropdownMenuSubTrigger>
