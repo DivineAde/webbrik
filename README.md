@@ -10,6 +10,7 @@
 A visual website builder with full CSS control. Lay pages out on a canvas, publish them in one click, or export clean HTML, CSS and React.
 
 [![CI](https://github.com/DivineAde/webbrik/actions/workflows/ci.yml/badge.svg)](https://github.com/DivineAde/webbrik/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-app_router-000000?logo=nextdotjs)
 ![NestJS](https://img.shields.io/badge/NestJS-API-e0234e?logo=nestjs&logoColor=white)
@@ -180,5 +181,15 @@ Webbrik is under active development and has not launched. The [status ledger](do
 | [Decisions](docs/decisions) | Why things are the way they are (22 ADRs) |
 | [Security model](docs/architecture/security-model.md) | Sessions, CSRF, sanitising, isolation |
 | [Design guidelines](DESIGN.md) | Visual language, components and motion |
+
+## License
+
+Webbrik is free to use, change and share under the [Apache License 2.0](LICENSE). The copyright stays with the author, and every copy or fork must keep the [LICENSE](LICENSE) and [NOTICE](NOTICE) files, which credit the original work. The Webbrik name and logo are not part of the license: a fork needs its own name. See [CONTRIBUTING.md](CONTRIBUTING.md) before sending changes.
+
+<div align="center">
+
+Designed and built by [Divine Adeyeye](https://github.com/DivineAde).
+
+</div>
 
 The sites in the screenshots above are made-up examples, not real customers.

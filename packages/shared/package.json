@@ -1,9 +1,14 @@
 {
   "name": "@webbrik/shared",
   "version": "0.1.0",
+  "license": "Apache-2.0",
+  "author": "Divine Adeyeye",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit" }
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
 }

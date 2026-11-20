@@ -1,5 +1,7 @@
 {
   "name": "webbrik",
+  "license": "Apache-2.0",
+  "author": "Divine Adeyeye",
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "scripts": {
