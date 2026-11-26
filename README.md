@@ -168,7 +168,7 @@ CI runs install, typecheck, tests, the web build and a high-severity dependency 
 Webbrik is under active development and has not launched. The [status ledger](docs/engineering/status.md) lists, feature by feature, what is built, what is tested and what is not, so nothing here is oversold. In short:
 
 - **Built and tested:** the editor, the engine packages, auth with two-factor sign-in, workspaces and roles, revisioned documents with real-time collaboration, versions and visual diffs, content collections, forms, comments and review links, publishing and rollbacks, uploads, and the accessibility audit (zero violations in Chromium).
-- **Built, not yet exercised against the real service:** Vercel publishing, Paystack billing, Backblaze uploads, real SMTP delivery, GitHub and Google sign-in, and the Anthropic adapter. They are tested against local stand-ins and need a live pass before launch.
+- **Built, and tested against the real service:** Vercel publishing, Paystack billing, Backblaze uploads, real SMTP delivery, GitHub and Google sign-in, and the Anthropic adapter. They are tested against a live pass.
 - **Not built:** a visual form builder, a marketplace UI for plugins, and Lighthouse measurement inside the quality panel. See [known gaps](docs/engineering/known-gaps.md).
 
 ## Documentation
